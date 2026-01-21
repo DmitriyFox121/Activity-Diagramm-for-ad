@@ -7,7 +7,10 @@ start
 :Проверка запроса (валидация);
 if (Запрос корректен?) then (нет)
  :http 400;
+ |Пользователь|
+  :Получить уведомление;
  stop
+|API|
 else (да)
  :CREATE Ad;
  :Выставить обьявлению 
@@ -16,6 +19,9 @@ endif
 
 |#yellow|DB|
 :Заполнить данные [INSERT INTO ads];
+ note right
+ Status - blank
+ end note
 
 |#lightblue|API|
 fork
@@ -25,7 +31,7 @@ fork
   :Выставить обьявлению 
    статус "Moderation";
    |#yellow|DB|
-    :Status - blank;
+    :Status - on_modereation;
    |#lightblue|API|
   
  end fork;
@@ -36,28 +42,25 @@ fork
 |#orange|Модератор|
 :Get/API/ver1/moderation/ads;
 :Получить новое обьявление;
-:Проверитиь обьявление;
+:Проверитиь объявление;
+:POST /API/ver1/moderation/ads/{id}/solution;
+
+|API|
+:Получить ответ;
 if (обьявление соответсвует правилам?) then (нет)
-  :POST /API/ver1/moderation/ads/{id}/bad;
-  |API|
    :Выставить обьявлению статус "Cancel";
   |DB|
    :Status - cancel;
   |API|
    :Отправить уведомление о провале;
-  |Пользователь|
-   :Получить обьявление о провальной публикации (http 403);
-stop
-|Модератор|
 else (да)
-  :POST /API/ver1/moderation/ads/{id}/good;
-  |API|
    :Выставить обьявлению статус "Publish";
   |DB|
    :Status - publish;
   |API|
    :Отправить уведомление об успехе;
-  |Пользователь|
-   :Получить обьявление об успешной публикации (http 200);
+|Пользователь|
+endif
+   :Получить уведомление;
 stop
 @enduml
